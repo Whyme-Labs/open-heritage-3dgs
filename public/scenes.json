@@ -1,0 +1,200 @@
+{
+  "version": 2,
+  "generatedOn": "2026-08-25",
+  "viewer": {
+    "desktopBudgetMillions": 2.0,
+    "mobileBudgetMillions": 0.75,
+    "preferredAssetOrder": [
+      "SOG",
+      "Compressed PLY",
+      "PLY"
+    ]
+  },
+  "scenes": [
+    {
+      "slug": "pantheon-interior",
+      "name": "Pantheon Interior",
+      "creator": "artfletch",
+      "sourcePage": "https://superspl.at/scene/dac6e508",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "description": "Recognizable interior captured from 1,068 Sony a7R V photographs. The creator states that the floor was recreated.",
+      "bestFor": "Interior navigation, close-range detail, lighting",
+      "download": {
+        "sceneId": "dac6e508",
+        "mode": "automatic",
+        "command": "./download_scenes.sh pantheon-interior"
+      },
+      "assets": [
+        {
+          "path": "scenes/pantheon-interior.sog",
+          "format": "SOG",
+          "priority": 1
+        },
+        {
+          "path": "scenes/pantheon-interior.compressed.ply",
+          "format": "Compressed PLY",
+          "priority": 2
+        },
+        {
+          "path": "scenes/pantheon-interior.ply",
+          "format": "PLY",
+          "priority": 3
+        }
+      ],
+      "collision": [
+        {
+          "path": "scenes/pantheon-interior.collision.glb",
+          "format": "GLB"
+        },
+        {
+          "path": "scenes/pantheon-interior.voxel.json",
+          "format": "Voxel"
+        }
+      ],
+      "boundary": {
+        "path": "boundaries/pantheon-interior.json"
+      },
+      "prepareType": "interior"
+    },
+    {
+      "slug": "saka-shrine",
+      "name": "Saka Shrine",
+      "creator": "kotohibi",
+      "sourcePage": "https://superspl.at/scene/3f8c617d",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "description": "Detailed shrine reconstruction from 1,255 Sony ZV-E1 photographs. The source page describes it as uncleaned.",
+      "bestFor": "Dense architectural detail and an Asian heritage scene",
+      "download": {
+        "sceneId": "3f8c617d",
+        "mode": "manual-fallback",
+        "command": "./download_scenes.sh saka-shrine",
+        "note": "The source currently returns HTTP 403 for direct lod-meta.json access. Use the source page Download button if the script reports 403."
+      },
+      "assets": [
+        {
+          "path": "scenes/saka-shrine.sog",
+          "format": "SOG",
+          "priority": 1
+        },
+        {
+          "path": "scenes/saka-shrine.compressed.ply",
+          "format": "Compressed PLY",
+          "priority": 2
+        },
+        {
+          "path": "scenes/saka-shrine.ply",
+          "format": "PLY",
+          "priority": 3
+        }
+      ],
+      "collision": [
+        {
+          "path": "scenes/saka-shrine.collision.glb",
+          "format": "GLB"
+        },
+        {
+          "path": "scenes/saka-shrine.voxel.json",
+          "format": "Voxel"
+        }
+      ],
+      "boundary": {
+        "path": "boundaries/saka-shrine.json"
+      },
+      "prepareType": "interior"
+    },
+    {
+      "slug": "christchurch-castle",
+      "name": "Christchurch Castle",
+      "creator": "nebulousflynn",
+      "sourcePage": "https://superspl.at/scene/de75a082",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "description": "Outdoor ruins reconstructed from 360-degree drone video.",
+      "bestFor": "Outdoor fly controls, ruins, aerial viewpoints",
+      "download": {
+        "sceneId": "de75a082",
+        "mode": "automatic",
+        "command": "./download_scenes.sh christchurch-castle"
+      },
+      "assets": [
+        {
+          "path": "scenes/christchurch-castle.sog",
+          "format": "SOG",
+          "priority": 1
+        },
+        {
+          "path": "scenes/christchurch-castle.compressed.ply",
+          "format": "Compressed PLY",
+          "priority": 2
+        },
+        {
+          "path": "scenes/christchurch-castle.ply",
+          "format": "PLY",
+          "priority": 3
+        }
+      ],
+      "collision": [
+        {
+          "path": "scenes/christchurch-castle.collision.glb",
+          "format": "GLB"
+        },
+        {
+          "path": "scenes/christchurch-castle.voxel.json",
+          "format": "Voxel"
+        }
+      ],
+      "boundary": {
+        "path": "boundaries/christchurch-castle.json"
+      },
+      "prepareType": "exterior"
+    },
+    {
+      "slug": "dundurn-castle",
+      "name": "Dundurn Castle",
+      "creator": "jeastaman",
+      "sourcePage": "https://superspl.at/scene/bd8db7c2",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "description": "Large exterior reconstruction from about 600 4K DJI Mini 4 Pro images.",
+      "bestFor": "Exterior architecture and lawn-scale movement",
+      "download": {
+        "sceneId": "bd8db7c2",
+        "mode": "automatic",
+        "command": "./download_scenes.sh dundurn-castle"
+      },
+      "assets": [
+        {
+          "path": "scenes/dundurn-castle.sog",
+          "format": "SOG",
+          "priority": 1
+        },
+        {
+          "path": "scenes/dundurn-castle.compressed.ply",
+          "format": "Compressed PLY",
+          "priority": 2
+        },
+        {
+          "path": "scenes/dundurn-castle.ply",
+          "format": "PLY",
+          "priority": 3
+        }
+      ],
+      "collision": [
+        {
+          "path": "scenes/dundurn-castle.collision.glb",
+          "format": "GLB"
+        },
+        {
+          "path": "scenes/dundurn-castle.voxel.json",
+          "format": "Voxel"
+        }
+      ],
+      "boundary": {
+        "path": "boundaries/dundurn-castle.json"
+      },
+      "prepareType": "exterior"
+    }
+  ]
+}

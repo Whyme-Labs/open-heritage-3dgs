@@ -1,0 +1,20 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "open-heritage-3dgs",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-08-12",
+  "assets": {
+    "binding": "ASSETS",
+    "not_found_handling": "none",
+    "run_worker_first": ["/scenes/*"]
+  },
+  "r2_buckets": [
+    {
+      "binding": "SCENES",
+      "bucket_name": "open-heritage-scenes"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}

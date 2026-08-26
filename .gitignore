@@ -1,0 +1,12 @@
+.DS_Store
+node_modules/
+.tools/
+dist/
+.wrangler/
+public/viewer/index.html
+public/viewer/index.css
+public/viewer/index.js
+public/viewer/settings.json
+scenes/*
+!scenes/.gitkeep
+*.log

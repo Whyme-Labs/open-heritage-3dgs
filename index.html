@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#090b10">
+  <title>Open heritage 3DGS prototype</title>
+  <link rel="stylesheet" href="/src/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="scene-panel" id="scenePanel">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div>
+          <h1>Heritage 3DGS</h1>
+          <p>Local WebGPU prototype</p>
+        </div>
+      </div>
+
+      <div class="panel-copy">
+        Select any scene file present in <code>scenes/</code>. SOG is preferred, but the viewer also accepts your downloaded PLY directly.
+      </div>
+
+      <div class="scene-list" id="sceneList" aria-label="Available scenes"></div>
+
+      <div class="panel-footer">
+        <div class="legend"><i class="is-ready"></i> Local asset ready</div>
+        <div class="legend"><i class="is-missing"></i> Download required</div>
+      </div>
+    </aside>
+
+    <main class="main-stage">
+      <header class="topbar">
+        <button class="icon-button menu-button" id="menuButton" type="button" aria-label="Open scene list">☰</button>
+        <div class="scene-title">
+          <span class="eyebrow" id="sceneEyebrow">Local scene</span>
+          <h2 id="sceneTitle">Checking files</h2>
+          <p id="sceneDescription"></p>
+        </div>
+        <div class="topbar-actions">
+          <label>
+            <span>Quality</span>
+            <select id="qualitySelect">
+              <option value="auto">Auto</option>
+              <option value="low">Low</option>
+              <option value="balanced">Balanced</option>
+              <option value="high">High</option>
+            </select>
+          </label>
+          <label>
+            <span>Renderer</span>
+            <select id="rendererSelect">
+              <option value="auto">WebGPU first</option>
+              <option value="webgl">WebGL2</option>
+            </select>
+          </label>
+          <a class="secondary-button" id="sourceLink" href="#" target="_blank" rel="noopener">Source</a>
+        </div>
+      </header>
+
+      <section class="viewer-stage">
+        <iframe
+          id="viewerFrame"
+          title="Interactive Gaussian splat scene"
+          allow="fullscreen; xr-spatial-tracking; accelerometer; gyroscope"
+          allowfullscreen>
+        </iframe>
+
+        <div class="stage-message is-visible" id="stageMessage">
+          <div class="stage-message-card">
+            <div class="loader" aria-hidden="true"></div>
+            <h3 id="messageTitle">Checking local assets</h3>
+            <p id="messageBody">The prototype is finding the best available scene format.</p>
+            <div class="message-actions" id="messageActions"></div>
+          </div>
+        </div>
+
+        <div class="runtime-strip" aria-live="polite">
+          <span id="assetStatus">Asset: checking</span>
+          <span id="rendererStatus">Renderer: waiting</span>
+          <span id="boundaryStatus">Boundary: waiting</span>
+          <span id="collisionStatus">Collision: checking</span>
+        </div>
+      </section>
+
+      <footer class="scene-footer">
+        <div>
+          <b id="bestFor">Prototype scene</b>
+          <span id="licenseText"></span>
+        </div>
+        <div class="footer-actions">
+          <button type="button" class="text-button" id="copyCommand">Copy download command</button>
+          <a class="text-button" href="./ATTRIBUTION.md" target="_blank">Credits</a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+  <script type="module" src="/src/app.js"></script>
+</body>
+</html>

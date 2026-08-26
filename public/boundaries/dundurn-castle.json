@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "enabled": true,
+  "type": "auto",
+  "padding": 0.1,
+  "verticalPadding": 0.2,
+  "orbitPadding": 0.55,
+  "maxOrbitDistanceScale": 1.8,
+  "minOrbitDistanceScale": 0.005,
+  "boundaryHaptics": true,
+  "notes": [
+    "Automatic mode derives a world-space box from the loaded splat AABB and insets the fly/walk boundary by the configured padding.",
+    "For a tighter route boundary, change type to polygon and add XZ points plus minY and maxY."
+  ]
+}

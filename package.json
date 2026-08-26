@@ -1,0 +1,33 @@
+{
+  "name": "open-heritage-3dgs-prototype",
+  "version": "3.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Self-hosted WebGPU-first 3D Gaussian splat prototype with mobile controls and camera boundaries. Vite + Cloudflare Workers + R2.",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run build:viewer && vite build",
+    "preview": "vite preview",
+    "deploy": "npm run build && wrangler deploy",
+    "build:viewer": "node scripts/build-viewer.mjs",
+    "sync:r2": "node scripts/sync-scenes-r2.mjs",
+    "sync:r2:remote": "node scripts/sync-scenes-r2.mjs --remote",
+    "prepare:scene": "bash scripts/prepare-scene.sh",
+    "verify": "node scripts/verify.mjs"
+  },
+  "dependencies": {
+    "@playcanvas/splat-transform": "3.3.0",
+    "@playcanvas/supersplat-viewer": "1.29.3",
+    "playcanvas": "2.21.4"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.54.0",
+    "@cloudflare/workers-types": "^5.20260826.0",
+    "typescript": "^5.9.0",
+    "vite": "^8.2.2",
+    "wrangler": "^4.126.0"
+  }
+}
