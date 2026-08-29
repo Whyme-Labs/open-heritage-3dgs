@@ -1,0 +1,128 @@
+name: Temporary Spatial Studio real P2 ObservationSet validation
+
+on:
+  push:
+    branches:
+      - tmp/spatial-studio-real-fjd-validation-20260830
+    paths:
+      - ".github/workflows/spatial-studio-real-fjd-validation.yml"
+      - "tools/spatial-studio-real-validation/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reclaim runner disk and prepare Python
+        shell: bash
+        run: |
+          set -euxo pipefail
+          sudo rm -rf /usr/local/lib/android /opt/hostedtoolcache/CodeQL /usr/share/dotnet /opt/ghc || true
+          python3 -m pip install --disable-pip-version-check gdown
+          python3 -m compileall -q tools/spatial-studio-real-validation
+          df -h
+
+      - name: Download and pin the complete public P2 project
+        id: download
+        shell: bash
+        env:
+          FILE_ID: 1ASsC40943DUuZITz-FlsqWeugLE3nXtP
+          EXPECTED_SIZE: "4582053233"
+          EXPECTED_SHA256: 274f414a9d6c91df4b9c12f5a274ba8927d87fe575f47a6f333c13d30f08a387
+        run: |
+          set -euo pipefail
+          SOURCE="${RUNNER_TEMP}/fjd-p2-project.zip"
+          mkdir -p validation-results
+          success=false
+          for attempt in 1 2 3 4; do
+            rm -f "${SOURCE}"
+            echo "gdown attempt ${attempt}" | tee -a validation-results/download.log
+            if python3 -m gdown "${FILE_ID}" -O "${SOURCE}" 2>&1 | tee -a validation-results/download.log; then
+              if [[ "$(stat -c '%s' "${SOURCE}" 2>/dev/null || echo 0)" == "${EXPECTED_SIZE}" ]]; then
+                success=true
+                break
+              fi
+            fi
+            rm -f "${SOURCE}"
+            echo "direct HTTP attempt ${attempt}" | tee -a validation-results/download.log
+            URL="https://drive.usercontent.google.com/download?id=${FILE_ID}&export=download&confirm=t"
+            if curl -fL --retry 5 --retry-delay 5 --retry-all-errors \
+              --connect-timeout 30 --speed-time 120 --speed-limit 1024 \
+              -o "${SOURCE}" "${URL}" 2>&1 | tee -a validation-results/download.log; then
+              if [[ "$(stat -c '%s' "${SOURCE}" 2>/dev/null || echo 0)" == "${EXPECTED_SIZE}" ]]; then
+                success=true
+                break
+              fi
+            fi
+            sleep $((attempt * 20))
+          done
+          [[ "${success}" == true ]]
+          printf '%s  %s\n' "${EXPECTED_SHA256}" "${SOURCE}" | sha256sum --check
+          stat -c 'bytes=%s' "${SOURCE}" | tee validation-results/source-size.txt
+          sha256sum "${SOURCE}" | tee validation-results/source-sha256.txt
+          echo "source=${SOURCE}" >> "${GITHUB_OUTPUT}"
+
+      - name: Materialize, repeat-verify, and bind the real ObservationSet
+        id: validation
+        continue-on-error: true
+        shell: bash
+        env:
+          SOURCE: ${{ steps.download.outputs.source }}
+        run: |
+          set -o pipefail
+          python3 tools/spatial-studio-real-validation/validate_real_project.py \
+            --source "${SOURCE}" \
+            --observation-set "${RUNNER_TEMP}/real-observation-set" \
+            --results validation-results 2>&1 | tee validation-results/validation.log
+          exit ${PIPESTATUS[0]}
+
+      - name: Remove all raw observations
+        if: always()
+        shell: bash
+        env:
+          SOURCE: ${{ steps.download.outputs.source }}
+        run: |
+          rm -f -- "${SOURCE:-/nonexistent}"
+          rm -rf "${RUNNER_TEMP}/real-observation-set"
+          find validation-results -type f -size +20M -delete
+          df -h
+
+      - name: Record validation outcome
+        if: always()
+        shell: bash
+        env:
+          DOWNLOAD_OUTCOME: ${{ steps.download.outcome }}
+          VALIDATION_OUTCOME: ${{ steps.validation.outcome }}
+        run: |
+          cat > validation-results/job-status.json <<EOF
+          {
+            "download_outcome": "${DOWNLOAD_OUTCOME}",
+            "validation_outcome": "${VALIDATION_OUTCOME}",
+            "run_id": "${GITHUB_RUN_ID}",
+            "commit": "${GITHUB_SHA}",
+            "raw_data_retained": false
+          }
+          EOF
+
+      - name: Upload sanitized validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spatial-studio-real-fjd-observation-validation
+          path: validation-results
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 6
+
+      - name: Fail if validation did not pass
+        if: always()
+        shell: bash
+        env:
+          VALIDATION_OUTCOME: ${{ steps.validation.outcome }}
+        run: test "${VALIDATION_OUTCOME}" = success
