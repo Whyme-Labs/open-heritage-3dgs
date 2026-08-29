@@ -1,0 +1,46 @@
+name: Temporary Rust toolchain export
+
+on:
+  push:
+    branches:
+      - tmp/export-rust-toolchain-20260830
+    paths:
+      - .github/workflows/export-rust-toolchain.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.85.0
+        with:
+          components: rustfmt, clippy
+      - name: Package relocatable toolchain
+        shell: bash
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y zstd
+          SYSROOT=$(rustc --print sysroot)
+          mkdir -p /tmp/rust-local
+          cp -a "$SYSROOT" /tmp/rust-local/toolchain
+          printf '%s\n' "$SYSROOT" > /tmp/rust-local/original-sysroot.txt
+          rustc --version --verbose > /tmp/rust-local/rustc-version.txt
+          cargo --version --verbose > /tmp/rust-local/cargo-version.txt
+          tar --zstd -C /tmp -cf rust-toolchain-1.85.0-linux-x86_64.tar.zst rust-local
+          sha256sum rust-toolchain-1.85.0-linux-x86_64.tar.zst > rust-toolchain-1.85.0-linux-x86_64.tar.zst.sha256
+          ls -lh rust-toolchain-1.85.0-linux-x86_64.tar.zst
+      - name: Upload toolchain
+        uses: actions/upload-artifact@v4
+        with:
+          name: rust-toolchain-1.85.0-linux-x86_64
+          path: |
+            rust-toolchain-1.85.0-linux-x86_64.tar.zst
+            rust-toolchain-1.85.0-linux-x86_64.tar.zst.sha256
+          retention-days: 1
+          compression-level: 0
