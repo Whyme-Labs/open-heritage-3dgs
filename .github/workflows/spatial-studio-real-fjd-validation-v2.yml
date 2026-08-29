@@ -1,0 +1,129 @@
+name: Temporary Spatial Studio real P2 validation with persisted evidence
+
+on:
+  push:
+    branches:
+      - tmp/spatial-studio-real-fjd-validation-20260830
+    paths:
+      - ".github/workflows/spatial-studio-real-fjd-validation-v2.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: spatial-studio-real-p2-persisted-validation
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare runner
+        shell: bash
+        run: |
+          set -euxo pipefail
+          sudo rm -rf /usr/local/lib/android /opt/hostedtoolcache/CodeQL /usr/share/dotnet /opt/ghc || true
+          python3 -m pip install --disable-pip-version-check gdown
+          python3 -m compileall -q tools/spatial-studio-real-validation
+          rm -rf validation-evidence/real-p2
+          mkdir -p validation-evidence/real-p2
+          df -h
+
+      - name: Download pinned P2 source
+        id: download
+        shell: bash
+        env:
+          FILE_ID: 1ASsC40943DUuZITz-FlsqWeugLE3nXtP
+          EXPECTED_SIZE: "4582053233"
+          EXPECTED_SHA256: 274f414a9d6c91df4b9c12f5a274ba8927d87fe575f47a6f333c13d30f08a387
+        run: |
+          set -euo pipefail
+          SOURCE="${RUNNER_TEMP}/fjd-p2-project.zip"
+          RESULT=validation-evidence/real-p2
+          success=false
+          for attempt in 1 2 3 4 5; do
+            rm -f "${SOURCE}"
+            echo "gdown attempt ${attempt}" | tee -a "${RESULT}/download.log"
+            if python3 -m gdown "${FILE_ID}" -O "${SOURCE}" 2>&1 | tee -a "${RESULT}/download.log"; then
+              if [[ "$(stat -c '%s' "${SOURCE}" 2>/dev/null || echo 0)" == "${EXPECTED_SIZE}" ]]; then
+                success=true
+                break
+              fi
+            fi
+            rm -f "${SOURCE}"
+            URL="https://drive.usercontent.google.com/download?id=${FILE_ID}&export=download&confirm=t"
+            echo "direct HTTP attempt ${attempt}" | tee -a "${RESULT}/download.log"
+            if curl -fL --retry 5 --retry-delay 5 --retry-all-errors \
+              --connect-timeout 30 --speed-time 120 --speed-limit 1024 \
+              -o "${SOURCE}" "${URL}" 2>&1 | tee -a "${RESULT}/download.log"; then
+              if [[ "$(stat -c '%s' "${SOURCE}" 2>/dev/null || echo 0)" == "${EXPECTED_SIZE}" ]]; then
+                success=true
+                break
+              fi
+            fi
+            sleep $((attempt * 20))
+          done
+          [[ "${success}" == true ]]
+          test "$(stat -c '%s' "${SOURCE}")" = "${EXPECTED_SIZE}"
+          printf '%s  %s\n' "${EXPECTED_SHA256}" "${SOURCE}" | sha256sum --check
+          stat -c '%s' "${SOURCE}" > "${RESULT}/source-size.txt"
+          sha256sum "${SOURCE}" | sed "s#${SOURCE}#fjd-p2-project.zip#" > "${RESULT}/source-sha256.txt"
+          echo "source=${SOURCE}" >> "${GITHUB_OUTPUT}"
+
+      - name: Validate immutable ingestion and role binding
+        id: validation
+        continue-on-error: true
+        shell: bash
+        env:
+          SOURCE: ${{ steps.download.outputs.source }}
+        run: |
+          set -o pipefail
+          python3 tools/spatial-studio-real-validation/validate_real_project.py \
+            --source "${SOURCE}" \
+            --observation-set "${RUNNER_TEMP}/real-observation-set" \
+            --results validation-evidence/real-p2 2>&1 \
+            | tee validation-evidence/real-p2/validation.log
+          exit ${PIPESTATUS[0]}
+
+      - name: Remove all raw observations
+        if: always()
+        shell: bash
+        env:
+          SOURCE: ${{ steps.download.outputs.source }}
+        run: |
+          rm -f -- "${SOURCE:-/nonexistent}"
+          rm -rf "${RUNNER_TEMP}/real-observation-set"
+          find validation-evidence/real-p2 -type f -size +20M -delete
+
+      - name: Record and commit sanitized evidence
+        if: always()
+        shell: bash
+        env:
+          DOWNLOAD_OUTCOME: ${{ steps.download.outcome }}
+          VALIDATION_OUTCOME: ${{ steps.validation.outcome }}
+        run: |
+          cat > validation-evidence/real-p2/job-status.json <<EOF
+          {
+            "download_outcome": "${DOWNLOAD_OUTCOME}",
+            "validation_outcome": "${VALIDATION_OUTCOME}",
+            "run_id": "${GITHUB_RUN_ID}",
+            "commit": "${GITHUB_SHA}",
+            "raw_data_retained": false
+          }
+          EOF
+          git config user.name 'spatial-studio-validation-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add validation-evidence/real-p2
+          git commit -m 'Record sanitized real P2 ObservationSet validation' || true
+          git push origin HEAD:tmp/spatial-studio-real-fjd-validation-20260830
+
+      - name: Enforce successful validation
+        if: always()
+        shell: bash
+        env:
+          VALIDATION_OUTCOME: ${{ steps.validation.outcome }}
+        run: test "${VALIDATION_OUTCOME}" = success
